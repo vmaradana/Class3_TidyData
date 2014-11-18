@@ -1,89 +1,61 @@
 ---
-title: "Codebook for run_anlaysis.R that describes the steps for data cleansing"
+title: "Codebook describing columns in dtStdMean and tidy_data.txt"
 output: html_document
 ---
 
-**Step 1**: Load features.txt (column mapping) into a vairiabl 'f'
+The data frame in varialbe **dtStdMean** is the combined set (train and test data) that has 68columns:
 
-```{r}
-f<-read.table("UCI HAR Dataset/features.txt")
-```
+- subject
+- activity
+- 33 mean columns and 
+- 33 std columns.
 
-**Step 2**: Load Activity mapping and set the column names so that they can be referenced further below
+Output in **tidy_data.txt** is the average of each variable for each activity and each subject with 180 observations and 68 columns.
 
-```{r}
-act_lab<-read.table("UCI HAR Dataset/activity_labels.txt")
-names(act_lab)<-c("code","activity")
-```
-
-**Step 3**: created a loaddata function that reads three files, adds column names and binds it into one data frame. To be used with train and test data
-
-```{r}
-loaddata<-function(subject,data,activity)
-        {
-                sub<-read.table(subject)
-                names(sub)<-c("subject")
-                dat<-read.table(data)
-                names(dat)<-f[,2]
-                act<-read.table(activity)
-                names(act)<-c("code")
-                dataWI<-cbind(sub,act,dat)
-        }     
-```
-
-**Step 4**: Load Train and Test data use the load data function from above 
-
-```{r}
-train<-loaddata("UCI HAR Dataset/train/subject_train.txt","UCI HAR Dataset/train/X_train.txt","UCI HAR Dataset/train/y_train.txt")
-test<-loaddata("UCI HAR Dataset/test/subject_test.txt","UCI HAR Dataset/test/X_test.txt","UCI HAR Dataset/test/y_test.txt")
-```
-
-**Step 5**: Merges the training and the test sets to create one data set.
-
-```{r}
-dt<-rbind(train,test)
-```
-
-**Step 6**: Add meaning full activity names based on the activity code
-
-```{r}
-dt<-merge(dt,act_lab,by.x="code",by.y="code")
-```
-
-**Step 7**: Build a list of all the columns that are either mean or standard deviation (std) using grep. Also add the subject and activity columns
-
-```{r}
-mean_cols<- grep("mean",names(dt))
-std_cols<-grep("std",names(dt))
-fcols<-c(c(2,564),mean_cols,std_cols)
-```
+- subject
+- activity
+- 66 mean for each activity and each subject of mean and std columns noted above.
 
 
-**Step 8**: Extracts into dtStdMeans only the measurements on the mean and standard deviation for each measurement from dt.
 
-```{r}
-dtStdMean<-dt[,fcols]
-```
+Feature Selection from original data
+====================================
 
-**Step 9**: clean up column names to remove "-" and "()"
+The features selected for this database come from the accelerometer and gyroscope 3-axial raw signals tAcc-XYZ and tGyro-XYZ. These time domain signals (prefix 't' to denote time) were captured at a constant rate of 50 Hz. Then they were filtered using a median filter and a 3rd order low pass Butterworth filter with a corner frequency of 20 Hz to remove noise. Similarly, the acceleration signal was then separated into body and gravity acceleration signals (tBodyAcc-XYZ and tGravityAcc-XYZ) using another low pass Butterworth filter with a corner frequency of 0.3 Hz. 
 
-```{r}
-tmpnames<-names(dtStdMean)[3:81]
-tmpnames<-gsub("-","_",tmpnames)
-tmpnames<-gsub("\\()","",tmpnames)
-## set the cleaned up column names
-names(dtStdMean)[3:81]<-tmpnames
-```
+Subsequently, the body linear acceleration and angular velocity were derived in time to obtain Jerk signals (tBodyAccJerk-XYZ and tBodyGyroJerk-XYZ). Also the magnitude of these three-dimensional signals were calculated using the Euclidean norm (tBodyAccMag, tGravityAccMag, tBodyAccJerkMag, tBodyGyroMag, tBodyGyroJerkMag). 
 
-**Step 10**: Use the summaryBy function from the "doBy" library on  dtStdMean to create independent tidy data set with the average of each variable for each activity and each subject.
+Finally a Fast Fourier Transform (FFT) was applied to some of these signals producing fBodyAcc-XYZ, fBodyAccJerk-XYZ, fBodyGyro-XYZ, fBodyAccJerkMag, fBodyGyroMag, fBodyGyroJerkMag. (Note the 'f' to indicate frequency domain signals). 
 
-```{r}
-library("doBy")
-tidy_data_MeanBySubjectActivity<-summaryBy(list(c(names(dtStdMean)[3:81]),c("subject","activity")),data=dtStdMean,FUN=c(mean))
-```
+These signals were used to estimate variables of the feature vector for each pattern:  
+'-XYZ' is used to denote 3-axial signals in the X, Y and Z directions.
 
-**Step 11**: Save tidy data to a file
+- tBodyAcc-XYZ
+- tGravityAcc-XYZ
+- tBodyAccJerk-XYZ
+- tBodyGyro-XYZ
+- tBodyGyroJerk-XYZ
+- tBodyAccMag
+- tGravityAccMag
+- tBodyAccJerkMag
+- tBodyGyroMag
+- tBodyGyroJerkMag
+- fBodyAcc-XYZ
+- fBodyAccJerk-XYZ
+- fBodyGyro-XYZ
+- fBodyAccMag
+- fBodyAccJerkMag
+- fBodyGyroMag
+- fBodyGyroJerkMag
 
-```{r}
-write.table(tidy_data_MeanBySubjectActivity,"tidy_data.txt",row.names=FALSE)
-```
+The set of variables that were estimated from these signals are: 
+
+- mean(): Mean value
+- std(): Standard deviation
+
+Notes: 
+======
+
+- All the acceleration variables were measured in 'g' and the normalized to be bounded in [-1,1]
+- All the angular measurements from gryoscope were measured in radians/sec and then normalized to be bounded in [-1,1]
+- There were additional filtering and transformation applied before it was picked up for this processing please see the codebook notes for the source data.

@@ -50,7 +50,7 @@ dt<-merge(dt,act_lab,by.x="code",by.y="code")
 
 
 ##get the list of all the columns that are either mean or standard deviation (std)
-mean_cols<- grep("mean",names(dt))
+mean_cols<- grep("mean\\()",names(dt))
 std_cols<-grep("std",names(dt))
 
 ## final column list subject, activity, mean and std
@@ -62,12 +62,12 @@ fcols<-c(c(2,564),mean_cols,std_cols)
 dtStdMean<-dt[,fcols]
 
 ## clean up column names to remove "-" and "()"
-tmpnames<-names(dtStdMean)[3:81]
+tmpnames<-names(dtStdMean)[3:68]
 tmpnames<-gsub("-","_",tmpnames)
 tmpnames<-gsub("\\()","",tmpnames)
 
 ## set the cleaned up column names
-names(dtStdMean)[3:81]<-tmpnames
+names(dtStdMean)[3:68]<-tmpnames
 
 ## Use the summaryBy function from the "doBy" library 
 library("doBy")
@@ -75,9 +75,8 @@ library("doBy")
 ## 5.From the data set in step 4, creates a second, independent tidy data set with the average of each 
 ##variable for each activity and each subject.
 ## create tidy data to show means of all activity columns by subject and activity
-tidy_data_MeanBySubjectActivity<-summaryBy(list(c(names(dtStdMean)[3:81]),c("subject","activity")),data=dtStdMean,FUN=c(mean))
+tidy_data_MeanBySubjectActivity<-summaryBy(list(c(names(dtStdMean)[3:68]),c("subject","activity")),data=dtStdMean,FUN=c(mean))
 
 ## Save Tidy data to a text file without row names
 write.table(tidy_data_MeanBySubjectActivity,"tidy_data.txt",row.names=FALSE)
-
 
